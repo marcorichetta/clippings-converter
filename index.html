@@ -14,19 +14,40 @@
     </head>
 
 <body class="bg-gray-100">
+    <py-config>
+        packages = ["markdown"]
+        plugins = [
+        "https://pyscript.net/latest/plugins/python/py_markdown.py",
+        "https://pyscript.net/latest/plugins/python/py_tutor.py"
+    ]
+    [[fetch]]
+    files = ["./converter.py"]
+    </py-config>
+    <py-script>
+        from converter import generate_markdown
+        from js import document
+
+        input_textarea = document.getElementById("clippings-input")
+        output_textarea = document.getElementById("markdown-output")
+
+        def do_convert(event):
+            markdown = generate_markdown()
+            output_textarea.value = markdown
+
+        input_textarea.oninput = do_convert
+    </py-script>
     <div class="container mx-auto py-8">
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <h2 class="text-lg font-semibold mb-4">Paste your Kindle clippings here:</h2>
-                <textarea id="clippings-input" class="w-full h-64 p-4 rounded-md border-gray-300"></textarea>
-            </div>
-            <div>
-                <h2 class="text-lg font-semibold mb-4">Markdown output:</h2>
-                <py-md id="markdown-output">
-                    # HOla
-                    ## asd
-                </py-md>
-            </div>
+        <div class="">
+            <form class="grid grid-cols-2 gap-4" method="post">
+                <section>
+                    <h2 class="text-lg font-semibold mb-4">Paste your Kindle clippings here:</h2>
+                    <textarea id="clippings-input" class="w-full h-64 p-4 rounded-md border-gray-300"></textarea>
+                </section>
+                <section>
+                    <h2 class="text-lg font-semibold mb-4">Markdown output:</h2>
+                    <textarea id="markdown-output" class="w-full h-64 p-4 rounded-md border-gray-300"></textarea>
+                </section>
+            </form>
         </div>
         <div class="mt-8">
             <button py-click="generate_markdown()" id="markdown"
@@ -34,54 +55,6 @@
             >Generate Markdown</button>
         </div>
     </div>
-    <py-config>
-        packages = ["markdown"]
-        plugins = [
-        "https://pyscript.net/latest/plugins/python/py_markdown.py",
-        "https://pyscript.net/latest/plugins/python/py_tutor.py"
-      ]
-      </py-config>
-    <py-script>
-        from markdown import markdown
-        from pyscript import Element
-        import re
-
-        print(pyscript.version_info)
-        def generate_markdown():
-            # Retrieve the clippings text from the input field
-            clippings = Element('clippings-input').value
-
-            # Split the clippings text into individual notes
-            notes = clippings.split('==========')
-
-            # Initialize an empty dictionary to store the notes by book
-            notes_by_book = {}
-
-            # Iterate over the notes and group them by book title
-            for note in notes:
-                if note:
-                    # Extract the book title and note text from the note
-                    lines = note.strip().split('\n')
-                    book_title = lines[0].strip()
-                    note_text = '\n'.join(lines[1:]).strip()
-        
-                    # Add the note to the corresponding book
-                    if book_title not in notes_by_book:
-                        notes_by_book[book_title] = []
-                    notes_by_book[book_title].append(note_text)
-
-            # Generate the Markdown output grouped by book title
-            markdown = ''
-            for book_title, notes in notes_by_book.items():
-                markdown += f'## {book_title}\n\n'
-                for note in notes:
-                    markdown += f'- {note}\n'
-                markdown += '\n'
-            
-            print(markdown)
-            display(markdown, target="markdown-output")
-
-    </py-script>
 
 </body>
 
