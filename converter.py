@@ -1,5 +1,4 @@
 import re
-
 from markdown import markdown
 from pyscript import Element
 
@@ -32,7 +31,7 @@ def generate_markdown():
     for book_title, notes in notes_by_book.items():
         markdown += f'## {book_title}\n\n'
         for note in notes:
-            markdown += f'- {note}\n'
+            markdown += f'{note}\n'
         markdown += '\n'
 
     return markdown

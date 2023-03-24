@@ -1,40 +1,46 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-        <title>Kindle Clippings to Markdown</title>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-        <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>Kindle Clippings to Markdown</title>
 
-    </head>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.4/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
 
 <body class="bg-gray-100">
     <py-config>
         packages = ["markdown"]
         plugins = [
         "https://pyscript.net/latest/plugins/python/py_markdown.py",
-        "https://pyscript.net/latest/plugins/python/py_tutor.py"
-    ]
-    [[fetch]]
-    files = ["./converter.py"]
+        ]
+        [[fetch]]
+        files = ["./converter.py"]
     </py-config>
     <py-script>
         from converter import generate_markdown
-        from js import document
+        from js import document, window
 
+        # Get elements
         input_textarea = document.getElementById("clippings-input")
-        output_textarea = document.getElementById("markdown-output")
+        markdown_output = document.getElementById("markdown-output")
+        html_output = document.getElementById("html-output")
 
         def do_convert(event):
             markdown = generate_markdown()
-            output_textarea.value = markdown
+            html = window.marked.parse(markdown)
 
+            html_output.innerHTML = html
+            markdown_output.value = markdown
+
+        # Bind function to oninput event
         input_textarea.oninput = do_convert
+
     </py-script>
     <div class="container mx-auto py-8">
         <div class="">
@@ -44,18 +50,30 @@
                     <textarea id="clippings-input" class="w-full h-64 p-4 rounded-md border-gray-300"></textarea>
                 </section>
                 <section>
-                    <h2 class="text-lg font-semibold mb-4">Markdown output:</h2>
-                    <textarea id="markdown-output" class="w-full h-64 p-4 rounded-md border-gray-300"></textarea>
+                    <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
+                        <ul class="flex flex-wrap -mb-px" id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
+                            <li class="mr-2" role="presentation">
+                                <button class="inline-block text-gray-500 hover:text-gray-600 hover:border-gray-300 rounded-t-lg py-4 px-4 text-sm font-medium text-center border-transparent border-b-2 dark:text-gray-400 dark:hover:text-gray-300" id="markdown-tab" data-tabs-target="#markdown" type="button" role="tab" aria-controls="markdown" aria-selected="true">Markdown</button>
+                            </li>
+                            <li class="mr-2" role="presentation">
+                                <button class="inline-block text-gray-500 hover:text-gray-600 hover:border-gray-300 rounded-t-lg py-4 px-4 text-sm font-medium text-center border-transparent border-b-2 dark:text-gray-400 dark:hover:text-gray-300 active" id="preview-tab" data-tabs-target="#preview" type="button" role="tab" aria-controls="preview" aria-selected="false">Preview</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="myTabContent">
+                        <div class="bg-gray-50 p-4 rounded-lg dark:bg-gray-800 hidden" id="markdown" role="tabpanel" aria-labelledby="markdown-tab">
+                            <textarea id="markdown-output" class="w-full h-64 p-4 rounded-md border-gray-300"></textarea>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg dark:bg-gray-800" id="preview" role="tabpanel" aria-labelledby="preview-tab">
+                            <div id="html-output"></div>
+                        </div>
+                    </div>            
                 </section>
             </form>
         </div>
-        <div class="mt-8">
-            <button py-click="generate_markdown()" id="markdown"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >Generate Markdown</button>
-        </div>
-    </div>
 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.4/flowbite.min.js"></script>
 </body>
 
 </html>
