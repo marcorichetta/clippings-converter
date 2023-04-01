@@ -1,5 +1,5 @@
 import re
-from typing import Tuple
+from typing import Self, Tuple
 from markdown import markdown
 from dataclasses import dataclass
 from datetime import datetime
@@ -7,9 +7,24 @@ from pathlib import Path
 
 
 @dataclass
+class Author:
+    name: str
+    surname: str
+    
+    @property
+    def full_name(self):
+        return f"{self.name} {self.surname}"
+    
+    @classmethod
+    def from_fullname(cls, full_name: str) -> Self:
+        """Creates an Author from a single string"""
+        name, surname = full_name.split("")
+        return cls(name, surname)
+
+@dataclass
 class Clipping:
     title: str
-    author: str
+    author: list[Author]
     page: int
     date: datetime
     note: str
@@ -55,26 +70,32 @@ class Clipping:
         return clippings_list
 
     @classmethod
-    def _parse_title_and_author(cls, line: str) -> tuple[str, str]:
+    def _parse_title_and_author(cls, line: str) -> tuple[str, list[Author]]:
         """Parses the line with the title and author and returns the author
 
         Args:
             line (str): First line of the clipping
 
         Returns:
-            tuple[str, str]: book title and author name
+            tuple[str, list[Author]]: book title and author/s full name
         """
-        book_title = ""
-        author_name = ""
 
-        regex = re.compile(r"(?P<title>.+) (?P<author>\(.*\))")
+        regex = re.compile(r'(?P<title>.+) (?P<author>\(.*\))')
         match = regex.search(line)
 
-        if match:
-            book_title = match.group("title")
-            author_name = match.group("author").replace("(", "").replace(")", "")
+        book_title = match.group("title") if match else ""
+        authors_data = match.group("author").replace("(", "").replace(")", "") if match else ""
+        
+        # Clipping has 2 or more authors divided by ;
+        if authors_data.count(";"):
+            authors_reverse_name = [author for author in authors_data.split(";")]
+            splitted_authors = [a.split(",") for a in authors_reverse_name]
+            authors = [Author(name=a[1], surname=a[0]) for a in splitted_authors]
 
-        return book_title, author_name
+        else:
+            authors = [Author.from_fullname(authors_data)]
+
+        return book_title, authors
 
     @classmethod
     def _convert_page_number(cls, page: str) -> int:
